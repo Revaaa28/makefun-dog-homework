@@ -27,6 +27,14 @@ import { mkdirSync, writeFileSync } from "node:fs";
 const LINE =
   "It was due today, so I turned it in early. Inside me.";
 
+// The sealed gate scores /output/entry.txt as valid only when it is
+// UTF-8 text of 1 to 200 characters and not only white space. Enforce
+// that here, before writing, so a bad line can never reach the gate.
+if (LINE.length < 1 || LINE.length > 200 || LINE.trim().length === 0) {
+  throw new Error(`entry line fails the gate: ${LINE.length} characters`);
+}
+
 // The grader runs this program in a sandbox and reads /output/entry.txt.
-mkdirSync("/output", { recursive: true });
-writeFileSync("/output/entry.txt", LINE, "utf8");
+const OUT_DIR = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
+mkdirSync(OUT_DIR, { recursive: true });
+writeFileSync(`${OUT_DIR}/entry.txt`, LINE, "utf8");
